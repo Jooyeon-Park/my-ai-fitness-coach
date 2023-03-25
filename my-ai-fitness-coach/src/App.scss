@@ -1,0 +1,11 @@
+.title {
+}
+
+MainContainer {
+  display: flex;
+  justify-content: center;
+}
+
+::placeholder {
+  color: black;
+}
