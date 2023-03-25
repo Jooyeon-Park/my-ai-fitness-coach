@@ -17,8 +17,7 @@ import Checkbox from "@mui/material/Checkbox";
 import { Button } from "@mui/material";
 import loading from "./deadlift.gif";
 
-const API_KEY = process.env.CHAT_GPT_API_KEY;
-// "Explain things like you would to a 10 year old learning how to code."
+const API_KEY = process.env.REACT_APP_API_KEY;
 const systemMessage = {
   //  Explain things like you're talking to a software professional with 5 years of experience.
   role: "system",
