@@ -16,6 +16,7 @@ import FormGroup from "@mui/material/FormGroup";
 import Checkbox from "@mui/material/Checkbox";
 import { Button } from "@mui/material";
 import loading from "./deadlift.gif";
+import { fontWeight, margin } from "@mui/system";
 
 const API_KEY = process.env.REACT_APP_API_KEY;
 const systemMessage = {
@@ -25,10 +26,7 @@ const systemMessage = {
     You are a professional for suggesting custom, personalized workouts for people.
 
     Return your answer with text formatting, newlines and such as necessary.
-
-    Don't use greetings.
     `,
-  // Go straight into your answer. Don't use niceties such as "sure" or "okay"!
 };
 
 function App() {
@@ -45,7 +43,14 @@ function App() {
   const [days, setDays] = useState("3");
   const [cardio, setCardio] = useState("without");
   const [length, setLength] = useState("1 hour");
-  const [target, setTarget] = useState({
+  const [target1, setTarget1] = useState({
+    chest: false,
+    back: false,
+    arms: false,
+    shoulders: false,
+    legs: false,
+  });
+  const [target2, setTarget2] = useState({
     calves: false,
     hamstrings: false,
     quad: false,
@@ -56,6 +61,19 @@ function App() {
     traps: false,
     lats: false,
   });
+
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        messages[messages.length - 1].message
+      );
+      setIsCopied(true);
+    } catch (error) {
+      console.error("Failed to copy text: ", error);
+    }
+  };
 
   const handleGenderChange = (event) => {
     setGender(event.target.value);
@@ -73,7 +91,7 @@ function App() {
     setCardio(event.target.value);
   };
 
-  function targetString() {
+  function targetString(target) {
     var string = "";
     for (var key in target) {
       if (target[key]) {
@@ -120,14 +138,16 @@ function App() {
       message:
         "Generate " +
         days +
-        " days workout plan" +
+        " days a week workout plan" +
         cardio +
-        " cardio, without a rest day for " +
+        " cardio for " +
         gender +
         ". The duration of each day's workout should be total " +
         length +
-        " long. Include workout that targets the following: " +
-        targetString(),
+        " long. Must include workout that targets the following: " +
+        targetString(target1) +
+        " and " +
+        targetString(target2),
       direction: "outgoing",
       sender: "user",
     };
@@ -143,14 +163,21 @@ function App() {
     setIsTyping(true);
     await processMessageToChatGPT(newMessages);
   };
-
-  const handleTargetChange = (event) => {
-    setTarget({
-      ...target,
+  const handleTargetChange1 = (event) => {
+    setTarget1({
+      ...target1,
       [event.target.name]: event.target.checked,
     });
   };
 
+  const handleTargetChange2 = (event) => {
+    setTarget2({
+      ...target2,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const { chest, back, arms, shoulders, legs } = target1;
   const {
     calves,
     hamstrings,
@@ -161,9 +188,10 @@ function App() {
     forearms,
     traps,
     lats,
-  } = target;
+  } = target2;
 
   async function processMessageToChatGPT(chatMessages) {
+    setIsCopied(false);
     let apiMessages = chatMessages.map((messageObject) => {
       let role = "";
       if (messageObject.sender === "ChatGPT") {
@@ -211,16 +239,22 @@ function App() {
       <h1 className="title">My AI Fitness Coach</h1>
       <div className="subTitle">Powered by Chat GPT</div>
       <div className="content">
+        <div className="intro">
+          You don't like your workout routine you randomly got from the
+          internet?
+          <br />
+          Tell AI Fitness Coach about yourself and get a personalized workout
+          Routine.
+          <br />
+        </div>
+        <hr />
         <MainContainer className="mainContainer">
           <div className="options">
             <div className="optionGroup">
-              <FormLabel sx={{ color: "#17152a" }}>Gender</FormLabel>
-              <RadioGroup
-                row
-                defaultValue="Male"
-                name="radio-buttons-group"
-                // onChange={(i) => setGender(i.target.value)}
-              >
+              <FormLabel sx={{ color: "#17152a", fontWeight: "bold" }}>
+                Gender
+              </FormLabel>
+              <RadioGroup row defaultValue="Male" name="radio-buttons-group">
                 <FormControlLabel
                   value="Male"
                   control={
@@ -252,13 +286,10 @@ function App() {
               </RadioGroup>
             </div>
             <div className="optionGroup">
-              <FormLabel sx={{ color: "#17152a" }}>Working out Days</FormLabel>
-              <RadioGroup
-                row
-                defaultValue="3"
-                name="radio-buttons-group"
-                // onChange={(i) => setDays(i.target.value)}
-              >
+              <FormLabel sx={{ color: "#17152a", fontWeight: "bold" }}>
+                Working out days in a week
+              </FormLabel>
+              <RadioGroup row defaultValue="3" name="radio-buttons-group">
                 <FormControlLabel
                   value="1"
                   control={
@@ -360,7 +391,7 @@ function App() {
               </RadioGroup>
             </div>
             <div className="optionGroup">
-              <FormLabel sx={{ color: "#17152a" }}>
+              <FormLabel sx={{ color: "#17152a", fontWeight: "bold" }}>
                 Length of the workout
               </FormLabel>
               <RadioGroup
@@ -456,7 +487,9 @@ function App() {
               </RadioGroup>
             </div>
             <div className="optionGroup">
-              <FormLabel sx={{ color: "#17152a" }}>Include Cardio?</FormLabel>
+              <FormLabel sx={{ color: "#17152a", fontWeight: "bold" }}>
+                Include Cardio?
+              </FormLabel>
               <RadioGroup
                 row
                 defaultValue="without"
@@ -493,18 +526,109 @@ function App() {
                 />
               </RadioGroup>
             </div>
+            <br />
+            <FormLabel sx={{ color: "#17152a", fontWeight: "bold" }}>
+              Must include workouts target the following(Optional):
+            </FormLabel>
             <div className="optionGroup">
-              <Box sx={{ display: "flex" }}>
+              <Box sx={{ display: "flex", margin: "0px 0px 0px 20px" }}>
                 <FormControl component="fieldset" variant="standard">
                   <FormLabel sx={{ color: "#17152a" }}>
-                    Target muscle group (Optional)
+                    General Target muscle group
+                  </FormLabel>
+                  <FormGroup xs={3} row>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={chest}
+                          onChange={handleTargetChange1}
+                          name="chest"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Chest"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={back}
+                          onChange={handleTargetChange1}
+                          name="back"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Back"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={arms}
+                          onChange={handleTargetChange1}
+                          name="arms"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Arms"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={shoulders}
+                          onChange={handleTargetChange1}
+                          name="shoulders"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Shoulders"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={legs}
+                          onChange={handleTargetChange1}
+                          name="legs"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Legs"
+                    />
+                  </FormGroup>
+                </FormControl>
+              </Box>
+            </div>
+
+            <div className="optionGroup">
+              <Box sx={{ display: "flex", margin: "0px 0px 0px 20px" }}>
+                <FormControl component="fieldset" variant="standard">
+                  <FormLabel sx={{ color: "#17152a" }}>
+                    Specific Target muscle group
                   </FormLabel>
                   <FormGroup xs={3} row>
                     <FormControlLabel
                       control={
                         <Checkbox
                           checked={calves}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="calves"
                           sx={{
                             "&.Mui-checked": {
@@ -519,7 +643,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={hamstrings}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="hamstrings"
                           sx={{
                             "&.Mui-checked": {
@@ -534,7 +658,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={quad}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="quad"
                           sx={{
                             "&.Mui-checked": {
@@ -549,7 +673,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={glutes}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="glutes"
                           sx={{
                             "&.Mui-checked": {
@@ -564,7 +688,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={biceps}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="biceps"
                           sx={{
                             "&.Mui-checked": {
@@ -579,7 +703,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={triceps}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="triceps"
                           sx={{
                             "&.Mui-checked": {
@@ -594,7 +718,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={forearms}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="forearms"
                           sx={{
                             "&.Mui-checked": {
@@ -609,7 +733,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={traps}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="traps"
                           sx={{
                             "&.Mui-checked": {
@@ -624,7 +748,7 @@ function App() {
                       control={
                         <Checkbox
                           checked={lats}
-                          onChange={handleTargetChange}
+                          onChange={handleTargetChange2}
                           name="lats"
                           sx={{
                             "&.Mui-checked": {
@@ -646,7 +770,7 @@ function App() {
               sx={{ backgroundColor: "#2b7a78", color: "#feffff" }}
               onClick={handleSend}
             >
-              Generate Workout Plan
+              Generate Workout
             </Button>
           </div>
 
@@ -665,27 +789,38 @@ function App() {
                 // ) : null
               }
             >
-              {messages.map((message, i) => {
-                return message.sender === "ChatGPT" ? (
+              {messages[messages.length - 1].sender === "ChatGPT" ? (
+                <>
+                  {messages[messages.length - 1].message !== "" ? (
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "#17252a", color: "#feffff" }}
+                      onClick={handleCopyClick}
+                    >
+                      {isCopied ? "Copied!" : "Copy"}
+                    </Button>
+                  ) : (
+                    <></>
+                  )}
                   <ReactMarkdown styles={{ alignSelf: "flex-start" }}>
-                    {message.message}
+                    {messages[messages.length - 1].message}
                   </ReactMarkdown>
-                ) : null;
-              })}
+                </>
+              ) : null}
             </MessageList>
           </ChatContainer>
         </MainContainer>
-
+        <hr />
         <div className="footer">
           <div className="row row1">Created by Jooyeon Park</div>
           <div className="row row2">
-            Snake Software: Snake is the cuttest animal
+            Snake Software: Snake is the cutest animal
           </div>
           <a
             className="row row3"
-            href="https://github.com/Jooyeon-Park/y-hack-2023"
+            href="https://github.com/Jooyeon-Park/my-ai-fitness-coach"
           >
-            https://github.com/Jooyeon-Park/y-hack-2023
+            https://github.com/Jooyeon-Park/my-ai-fitness-coach
           </a>
         </div>
       </div>
