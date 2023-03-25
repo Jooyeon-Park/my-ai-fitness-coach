@@ -4,9 +4,6 @@ import {
   MainContainer,
   ChatContainer,
   MessageList,
-  Message,
-  MessageInput,
-  TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
 import ReactMarkdown from "react-markdown";
 import RadioGroup from "@mui/material/RadioGroup";
@@ -19,9 +16,8 @@ import FormGroup from "@mui/material/FormGroup";
 import Checkbox from "@mui/material/Checkbox";
 import { Button } from "@mui/material";
 import loading from "./deadlift.gif";
-import { FormControlProps } from "@mui/material";
 
-const API_KEY = "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";
+const API_KEY = process.env.CHAT_GPT_API_KEY;
 // "Explain things like you would to a 10 year old learning how to code."
 const systemMessage = {
   //  Explain things like you're talking to a software professional with 5 years of experience.
@@ -146,11 +142,7 @@ function App() {
     // Initial system message to determine ChatGPT functionality
     // How it responds, how it talks, etc.
     setIsTyping(true);
-    // await processMessageToChatGPT(newMessages);
-  };
-
-  const handleChange = async (event) => {
-    this.setState({ value: event.target.value });
+    await processMessageToChatGPT(newMessages);
   };
 
   const handleTargetChange = (event) => {
@@ -675,7 +667,7 @@ function App() {
               }
             >
               {messages.map((message, i) => {
-                return message.sender == "ChatGPT" ? (
+                return message.sender === "ChatGPT" ? (
                   <ReactMarkdown styles={{ alignSelf: "flex-start" }}>
                     {message.message}
                   </ReactMarkdown>
