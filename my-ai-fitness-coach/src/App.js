@@ -1,4 +1,4 @@
-import { useState, setState } from "react";
+import { useState } from "react";
 import "./App.scss";
 import {
   MainContainer,
@@ -16,9 +16,10 @@ import Box from "@mui/material/Box";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import FormGroup from "@mui/material/FormGroup";
-import FormHelperText from "@mui/material/FormHelperText";
 import Checkbox from "@mui/material/Checkbox";
 import { Button } from "@mui/material";
+import loading from "./deadlift.gif";
+import { FormControlProps } from "@mui/material";
 
 const API_KEY = "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";
 // "Explain things like you would to a 10 year old learning how to code."
@@ -38,7 +39,7 @@ const systemMessage = {
 function App() {
   const [messages, setMessages] = useState([
     {
-      message: "Hello, I'm ChatGPT! Ask me anything!",
+      message: "",
       sentTime: "just now",
       sender: "ChatGPT",
     },
@@ -47,7 +48,7 @@ function App() {
 
   const [gender, setGender] = useState("Male");
   const [days, setDays] = useState("3");
-  const [cardio, setCardio] = useState("Without");
+  const [cardio, setCardio] = useState("without");
   const [length, setLength] = useState("1 hour");
   const [target, setTarget] = useState({
     calves: false,
@@ -61,6 +62,22 @@ function App() {
     lats: false,
   });
 
+  const handleGenderChange = (event) => {
+    setGender(event.target.value);
+  };
+
+  const handleDaysChange = (event) => {
+    setDays(event.target.value);
+  };
+
+  const handleLengthChange = (event) => {
+    setLength(event.target.value);
+  };
+
+  const handleCardioChange = (event) => {
+    setCardio(event.target.value);
+  };
+
   function targetString() {
     var string = "";
     for (var key in target) {
@@ -68,10 +85,40 @@ function App() {
         string += key + ", ";
       }
     }
-
-    console.log("String: ", string);
     return string;
   }
+
+  const controlGender = (item) => ({
+    checked: gender === item,
+    onChange: handleGenderChange,
+    value: item,
+    name: "color-radio-button-demo",
+    inputProps: { "aria-label": item },
+  });
+
+  const controlDays = (item) => ({
+    checked: days === item,
+    onChange: handleDaysChange,
+    value: item,
+    name: "color-radio-button-demo",
+    inputProps: { "aria-label": item },
+  });
+
+  const controlLength = (item) => ({
+    checked: length === item,
+    onChange: handleLengthChange,
+    value: item,
+    name: "color-radio-button-demo",
+    inputProps: { "aria-label": item },
+  });
+
+  const controlCardio = (item) => ({
+    checked: cardio === item,
+    onChange: handleCardioChange,
+    value: item,
+    name: "color-radio-button-demo",
+    inputProps: { "aria-label": item },
+  });
 
   const handleSend = async () => {
     const newMessage = {
@@ -99,7 +146,7 @@ function App() {
     // Initial system message to determine ChatGPT functionality
     // How it responds, how it talks, etc.
     setIsTyping(true);
-    await processMessageToChatGPT(newMessages);
+    // await processMessageToChatGPT(newMessages);
   };
 
   const handleChange = async (event) => {
@@ -124,12 +171,8 @@ function App() {
     traps,
     lats,
   } = target;
-  async function processMessageToChatGPT(chatMessages) {
-    // messages is an array of messages
-    // Format messages for chatGPT API
-    // API is expecting objects in format of { role: "user" or "assistant", "content": "message here"}
-    // So we need to reformat
 
+  async function processMessageToChatGPT(chatMessages) {
     let apiMessages = chatMessages.map((messageObject) => {
       let role = "";
       if (messageObject.sender === "ChatGPT") {
@@ -140,9 +183,6 @@ function App() {
       return { role: role, content: messageObject.message };
     });
 
-    // Get the request body set up with the model we plan to use
-    // and the messages which we formatted above. We add a system message in the front to'
-    // determine how we want chatGPT to act.
     const apiRequestBody = {
       model: "gpt-3.5-turbo",
       messages: [
@@ -177,216 +217,486 @@ function App() {
 
   return (
     <div className="App">
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <MainContainer>
-          <h1 className="title">My AI Fitness Coach</h1>
-
-          <FormLabel>Gender</FormLabel>
-          <RadioGroup
-            row
-            defaultValue="Male"
-            name="radio-buttons-group"
-            onChange={(i) => setGender(i.target.value)}
-          >
-            <FormControlLabel value="Male" control={<Radio />} label="Male" />
-            <FormControlLabel
-              value="Female"
-              control={<Radio />}
-              label="Female"
-            />
-          </RadioGroup>
-
-          <FormLabel>Working out Days</FormLabel>
-          <RadioGroup
-            row
-            defaultValue="3"
-            name="radio-buttons-group"
-            onChange={(i) => setDays(i.target.value)}
-          >
-            <FormControlLabel value="1" control={<Radio />} label="1" />
-            <FormControlLabel value="2" control={<Radio />} label="2" />
-            <FormControlLabel value="3" control={<Radio />} label="3" />
-            <FormControlLabel value="4" control={<Radio />} label="4" />
-            <FormControlLabel value="5" control={<Radio />} label="5" />
-            <FormControlLabel value="6" control={<Radio />} label="6" />
-            <FormControlLabel value="7" control={<Radio />} label="7" />
-          </RadioGroup>
-
-          <FormLabel>Length of the workout</FormLabel>
-          <RadioGroup
-            row
-            defaultValue="1 hour"
-            name="radio-buttons-group"
-            onChange={(i) => setLength(i.target.value)}
-          >
-            <FormControlLabel
-              value="10 min"
-              control={<Radio />}
-              label="10 min"
-            />
-            <FormControlLabel
-              value="20 min"
-              control={<Radio />}
-              label="20 min"
-            />
-            <FormControlLabel
-              value="30 min"
-              control={<Radio />}
-              label="30 min"
-            />
-            <FormControlLabel
-              value="45 min"
-              control={<Radio />}
-              label="45 min"
-            />
-            <FormControlLabel
-              value="1 hour"
-              control={<Radio />}
-              label="1 hour"
-            />
-            <FormControlLabel
-              value="2 hour"
-              control={<Radio />}
-              label="2 hour"
-            />
-          </RadioGroup>
-
-          <FormLabel>Include Cardio?</FormLabel>
-          <RadioGroup
-            row
-            defaultValue="without"
-            name="radio-buttons-group"
-            onChange={(value) => setCardio(value)}
-          >
-            <FormControlLabel value="with" control={<Radio />} label="Yes" />
-            <FormControlLabel value="without" control={<Radio />} label="No" />
-          </RadioGroup>
-
-          <Box sx={{ display: "flex" }}>
-            <FormControl component="fieldset" variant="standard">
-              <FormLabel component="legend">
-                Target muscle group (Optional)
+      <h1 className="title">My AI Fitness Coach</h1>
+      <div className="subTitle">Powered by Chat GPT</div>
+      <div className="content">
+        <MainContainer className="mainContainer">
+          <div className="options">
+            <div className="optionGroup">
+              <FormLabel sx={{ color: "#17152a" }}>Gender</FormLabel>
+              <RadioGroup
+                row
+                defaultValue="Male"
+                name="radio-buttons-group"
+                // onChange={(i) => setGender(i.target.value)}
+              >
+                <FormControlLabel
+                  value="Male"
+                  control={
+                    <Radio
+                      {...controlGender("Male")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="Male"
+                />
+                <FormControlLabel
+                  value="Female"
+                  control={
+                    <Radio
+                      {...controlGender("Female")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="Female"
+                />
+              </RadioGroup>
+            </div>
+            <div className="optionGroup">
+              <FormLabel sx={{ color: "#17152a" }}>Working out Days</FormLabel>
+              <RadioGroup
+                row
+                defaultValue="3"
+                name="radio-buttons-group"
+                // onChange={(i) => setDays(i.target.value)}
+              >
+                <FormControlLabel
+                  value="1"
+                  control={
+                    <Radio
+                      {...controlDays("1")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="1"
+                />
+                <FormControlLabel
+                  value="2"
+                  control={
+                    <Radio
+                      {...controlDays("2")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="2"
+                />
+                <FormControlLabel
+                  value="3"
+                  control={
+                    <Radio
+                      {...controlDays("3")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="3"
+                />
+                <FormControlLabel
+                  value="4"
+                  control={
+                    <Radio
+                      {...controlDays("4")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="4"
+                />
+                <FormControlLabel
+                  value="5"
+                  control={
+                    <Radio
+                      {...controlDays("5")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="5"
+                />
+                <FormControlLabel
+                  value="6"
+                  control={
+                    <Radio
+                      {...controlDays("6")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="6"
+                />
+                <FormControlLabel
+                  value="7"
+                  control={
+                    <Radio
+                      {...controlDays("7")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="7"
+                />
+              </RadioGroup>
+            </div>
+            <div className="optionGroup">
+              <FormLabel sx={{ color: "#17152a" }}>
+                Length of the workout
               </FormLabel>
-              <FormGroup xs={3} row>
+              <RadioGroup
+                row
+                defaultValue="1 hour"
+                name="radio-buttons-group"
+                // onChange={(i) => setLength(i.target.value)}
+              >
                 <FormControlLabel
+                  value="10 min"
                   control={
-                    <Checkbox
-                      checked={calves}
-                      onChange={handleTargetChange}
-                      name="calves"
+                    <Radio
+                      {...controlLength("10 min")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Calves"
+                  label="10 min"
                 />
                 <FormControlLabel
+                  value="20 min"
                   control={
-                    <Checkbox
-                      checked={hamstrings}
-                      onChange={handleTargetChange}
-                      name="hamstrings"
+                    <Radio
+                      {...controlLength("20 min")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Hamstrings"
+                  label="20 min"
                 />
                 <FormControlLabel
+                  value="30 min"
                   control={
-                    <Checkbox
-                      checked={quad}
-                      onChange={handleTargetChange}
-                      name="quad"
+                    <Radio
+                      {...controlLength("30 min")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Quad"
+                  label="30 min"
                 />
                 <FormControlLabel
+                  value="45 min"
                   control={
-                    <Checkbox
-                      checked={glutes}
-                      onChange={handleTargetChange}
-                      name="glutes"
+                    <Radio
+                      {...controlLength("45 min")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Glutes"
+                  label="45 min"
                 />
                 <FormControlLabel
+                  value="1 hour"
                   control={
-                    <Checkbox
-                      checked={biceps}
-                      onChange={handleTargetChange}
-                      name="biceps"
+                    <Radio
+                      {...controlLength("1 hour")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Biceps"
+                  label="1 hour"
                 />
                 <FormControlLabel
+                  value="2 hour"
                   control={
-                    <Checkbox
-                      checked={triceps}
-                      onChange={handleTargetChange}
-                      name="triceps"
+                    <Radio
+                      {...controlLength("2 hour")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Triceps"
+                  label="2 hour"
+                />
+              </RadioGroup>
+            </div>
+            <div className="optionGroup">
+              <FormLabel sx={{ color: "#17152a" }}>Include Cardio?</FormLabel>
+              <RadioGroup
+                row
+                defaultValue="without"
+                name="radio-buttons-group"
+                // onChange={(value) => setCardio(value)}
+              >
+                <FormControlLabel
+                  value="with"
+                  control={
+                    <Radio
+                      {...controlCardio("with")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
+                    />
+                  }
+                  label="Yes"
                 />
                 <FormControlLabel
+                  value="without"
                   control={
-                    <Checkbox
-                      checked={forearms}
-                      onChange={handleTargetChange}
-                      name="forearms"
+                    <Radio
+                      {...controlCardio("without")}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "#2b7a78",
+                        },
+                      }}
                     />
                   }
-                  label="Forearms"
+                  label="No"
                 />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={traps}
-                      onChange={handleTargetChange}
-                      name="traps"
+              </RadioGroup>
+            </div>
+            <div className="optionGroup">
+              <Box sx={{ display: "flex" }}>
+                <FormControl component="fieldset" variant="standard">
+                  <FormLabel sx={{ color: "#17152a" }}>
+                    Target muscle group (Optional)
+                  </FormLabel>
+                  <FormGroup xs={3} row>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={calves}
+                          onChange={handleTargetChange}
+                          name="calves"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Calves"
                     />
-                  }
-                  label="Traps"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={lats}
-                      onChange={handleTargetChange}
-                      name="lats"
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={hamstrings}
+                          onChange={handleTargetChange}
+                          name="hamstrings"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Hamstrings"
                     />
-                  }
-                  label="Lats"
-                />
-              </FormGroup>
-            </FormControl>
-          </Box>
-
-          <Button variant="contained" onClick={handleSend}>
-            Generate Workout Plan
-          </Button>
-          {/* thithithithih */}
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={quad}
+                          onChange={handleTargetChange}
+                          name="quad"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Quad"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={glutes}
+                          onChange={handleTargetChange}
+                          name="glutes"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Glutes"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={biceps}
+                          onChange={handleTargetChange}
+                          name="biceps"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Biceps"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={triceps}
+                          onChange={handleTargetChange}
+                          name="triceps"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Triceps"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={forearms}
+                          onChange={handleTargetChange}
+                          name="forearms"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Forearms"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={traps}
+                          onChange={handleTargetChange}
+                          name="traps"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Traps"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={lats}
+                          onChange={handleTargetChange}
+                          name="lats"
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "#2b7a78",
+                            },
+                          }}
+                        />
+                      }
+                      label="Lats"
+                    />
+                  </FormGroup>
+                </FormControl>
+              </Box>
+            </div>
+          </div>
+          <div className="generateButton">
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#2b7a78", color: "#feffff" }}
+              onClick={handleSend}
+            >
+              Generate Workout Plan
+            </Button>
+          </div>
 
           <ChatContainer>
             <MessageList
               scrollBehavior="smooth"
               typingIndicator={
                 isTyping ? (
-                  <TypingIndicator content="ChatGPT is typing" />
+                  <div className="loading">
+                    <img src={loading} width="160px" alt="loading..." />
+                    <br />
+                    AI is generating your workout plan...
+                  </div>
                 ) : null
+                //   <TypingIndicator content="ChatGPT is typing" />
+                // ) : null
               }
             >
               {messages.map((message, i) => {
-                return (
+                return message.sender == "ChatGPT" ? (
                   <ReactMarkdown styles={{ alignSelf: "flex-start" }}>
                     {message.message}
                   </ReactMarkdown>
-                );
+                ) : null;
               })}
             </MessageList>
-            {/* <MessageInput placeholder="hello!!!" onSend={handleSend} /> */}
           </ChatContainer>
         </MainContainer>
+
+        <div className="footer">
+          <div className="row row1">Created by Jooyeon Park</div>
+          <div className="row row2">
+            Snake Software: Snake is the cuttest animal
+          </div>
+          <a
+            className="row row3"
+            href="https://github.com/Jooyeon-Park/y-hack-2023"
+          >
+            https://github.com/Jooyeon-Park/y-hack-2023
+          </a>
+        </div>
       </div>
     </div>
   );
